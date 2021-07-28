@@ -1,5 +1,6 @@
 const express = require("express");
 const document = require("./models/document");
+require("dotenv").config();
 
 const app = express();
 // Connect DB
@@ -13,10 +14,20 @@ const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 
 const path = require("path");
-app.use("/", express.static(path.join(__dirname, "static")));
+app.use(express.static(path.join(__dirname, "static")));
+
+// Routes
+
+app.get("/", (req, res) => {
+	res.sendFile(__dirname + "/static/home.html");
+});
+
+app.get("/error", (req, res) => {
+	res.sendFile(__dirname + "/static/error.html");
+});
 
 app.get("/:id", (req, res) => {
-	res.sendFile(__dirname + "/static/index.html");
+	res.sendFile(__dirname + "/static/document.html");
 });
 
 io.on("connection", (socket) => {
@@ -26,7 +37,6 @@ io.on("connection", (socket) => {
 		socket.emit("load-document", doc.data);
 
 		socket.on("send-changes", (delta) => {
-			// console.log(JSON.stringify(delta));
 			socket.broadcast.to(id).emit("receive-changes", delta);
 		});
 
@@ -38,7 +48,9 @@ io.on("connection", (socket) => {
 	console.log("Connected");
 });
 
-server.listen(4200);
+const PORT = process.env.PORT || 4200;
+
+server.listen(PORT);
 
 // DB Controller
 const defaultValue = "";

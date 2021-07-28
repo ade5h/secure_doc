@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Home</title>
+		<link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+			crossorigin="anonymous"
+		/>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	</head>
+	<body>
+		<nav class="navbar navbar-light bg-light">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="#">
+					<img
+						src="document-icon.png"
+						alt=""
+						height="25"
+						class="d-inline-block align-text-top"
+					/>
+					Secure Doc
+				</a>
+			</div>
+		</nav>
+		<div class="container">
+			<form>
+				<label for="path" class="form-label">Document Name</label>
+				<input
+					type="text"
+					id="path"
+					class="form-control"
+					aria-describedby="pathHelpBlock"
+				/>
+				<div id="pathHelpBlock" class="form-text">
+					This will take you to /DocName.
+				</div>
+				<button type="button" class="btn btn-primary" id="submitBtn">
+					Start Editing
+				</button>
+			</form>
+		</div>
+	</body>
+	<script src="homeScript.js"></script>
+</html>

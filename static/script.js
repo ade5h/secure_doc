@@ -1,44 +1,120 @@
-const TOOLBAR_OPTIONS = [
-	[{ header: [1, 2, 3, 4, 5, 6, false] }],
-	[{ font: [] }],
-	[{ list: "ordered" }, { list: "bullet" }],
-	["bold", "italic", "underline"],
-	[{ color: [] }, { background: [] }],
-	[{ align: [] }],
-	["blockquote", "code-block"],
-	["clean"],
-];
-const SAVE_INTERVAL_MS = 2000;
+$(".password").hide();
 
-const socket = io("http://localhost:4200");
+$(function () {
+	const path = window.location.pathname.substring(1);
 
-const path = window.location.pathname.substring(1);
-console.log(path);
+	let password = localStorage.getItem(path);
 
-socket.emit("get-document", path);
+	if (!password) {
+		$(".password").show();
+		$("#pass_button").click(() => {
+			password = $("#pass_text").val();
 
-socket.on("load-document", (doc) => {
-	quill.setContents(doc);
-	quill.enable();
+			if (password.length >= 16) {
+				$(".password").remove();
+				connectToServer(password);
+			}
+		});
+	} else {
+		$(".password").remove();
+		connectToServer(password);
+	}
 });
 
-var quill = new Quill("#editor-container", {
-	theme: "snow",
-	modules: { toolbar: TOOLBAR_OPTIONS },
-});
+function connectToServer(password) {
+	const TOOLBAR_OPTIONS = [
+		[{ header: [1, 2, 3, 4, 5, 6, false] }],
+		[{ font: [] }],
+		[{ list: "ordered" }, { list: "bullet" }],
+		["bold", "italic", "underline"],
+		[{ color: [] }, { background: [] }],
+		[{ align: [] }],
+		["blockquote", "code-block"],
+		["clean"],
+	];
 
-quill.disable();
-quill.setText("Loading...");
+	const SAVE_INTERVAL_MS = 2000;
 
-quill.on("text-change", function (delta, oldDelta, source) {
-	if (source !== "user") return;
-	socket.emit("send-changes", delta);
-});
+	const socket = io("http://localhost:4200");
 
-socket.on("receive-changes", function (delta) {
-	quill.updateContents(delta);
-});
+	const path = window.location.pathname.substring(1);
 
-setInterval(() => {
-	socket.emit("save-document", quill.getContents());
-}, SAVE_INTERVAL_MS);
+	socket.emit("get-document", path);
+
+	socket.on("load-document", (doc) => {
+		if (doc === "") {
+			localStorage.setItem(path, password);
+			// load on quill
+			quill.setContents(doc);
+			quill.enable();
+
+			setInterval(() => {
+				// encrypt
+				let encryptedContent = encrypt(password, quill.getContents());
+
+				socket.emit("save-document", encryptedContent);
+			}, SAVE_INTERVAL_MS);
+		} else {
+			// decrypt
+			let decryptedDoc = decrypt(password, doc);
+
+			if (!decryptedDoc) {
+				var url = "http://localhost:4200/error";
+				$(location).attr("href", url);
+				return;
+			} else {
+				// store the password on local storage
+				localStorage.setItem(path, password);
+				// load on quill
+				quill.setContents(decryptedDoc);
+				quill.enable();
+
+				setInterval(() => {
+					// encrypt
+					let encryptedContent = encrypt(password, quill.getContents());
+
+					socket.emit("save-document", encryptedContent);
+				}, SAVE_INTERVAL_MS);
+			}
+		}
+	});
+
+	var quill = new Quill("#editor-container", {
+		theme: "snow",
+		modules: { toolbar: TOOLBAR_OPTIONS },
+	});
+
+	quill.disable();
+	quill.setText("Loading...");
+
+	quill.on("text-change", function (delta, oldDelta, source) {
+		if (source !== "user") return;
+
+		// encrypt
+		let encryptedDelta = encrypt(password, delta);
+
+		socket.emit("send-changes", encryptedDelta);
+	});
+
+	socket.on("receive-changes", function (delta) {
+		// decrypt
+		let decryptedDelta = decrypt(password, delta);
+
+		quill.updateContents(decryptedDelta);
+	});
+}
+
+function encrypt(key, data) {
+	// Create an encryptor
+	var encryptor = window.encryptor(key);
+	var encrypted = encryptor.encrypt(data);
+	return encrypted;
+}
+
+function decrypt(key, data) {
+	// Create a decryptor
+	var encryptor = window.encryptor(key);
+	var decrypted = encryptor.decrypt(data);
+
+	return decrypted;
+}

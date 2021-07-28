@@ -1,0 +1,17 @@
+When you go to /:id
+
+Step 1) Check if password corresponding to /:id is stored in Internal Storage.
+
+Step 2) if(passowrd){
+		Goto step 3
+	}
+	else{
+		Ask to enter the password and goto Step 3
+	}
+Step 3) 
+	 -> Make a get request to /:id that gets the encrypted data from the server
+	 -> if there is no data in the server, store the password in the internal storage and make a new entry and start typing 
+
+	 -> if there is data in the server, Try to decrypt that data with the help of the password
+	 -> if(Decrypted) store the password in Internal Storage and start typing
+	 -> if(not decrypted) display error
