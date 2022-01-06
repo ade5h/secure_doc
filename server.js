@@ -32,6 +32,7 @@ app.get("/:id", (req, res) => {
 
 io.on("connection", (socket) => {
 	socket.on("get-document", async (id) => {
+		console.log("Get document");
 		const doc = await findOrCreateDocument(id);
 		socket.join(id);
 		socket.emit("load-document", doc.data);
@@ -48,7 +49,7 @@ io.on("connection", (socket) => {
 	console.log("Connected");
 });
 
-const PORT = process.env.PORT || 4200;
+const PORT = process.env.PORT || 8080;
 
 server.listen(PORT);
 
@@ -61,7 +62,10 @@ async function findOrCreateDocument(id) {
 		return;
 	}
 
+	console.log("Searching for the doc");
 	const doc = await document.findById(id);
+
+	console.log("Doc searched");
 
 	if (doc) return doc;
 

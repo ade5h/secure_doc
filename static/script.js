@@ -35,7 +35,7 @@ function connectToServer(password) {
 
 	const SAVE_INTERVAL_MS = 2000;
 
-	const socket = io("http://localhost:4200");
+	const socket = io("http://localhost:8080");
 
 	const path = window.location.pathname.substring(1);
 
@@ -59,7 +59,7 @@ function connectToServer(password) {
 			let decryptedDoc = decrypt(password, doc);
 
 			if (!decryptedDoc) {
-				var url = "http://localhost:4200/error";
+				var url = "http://localhost:8080/error";
 				$(location).attr("href", url);
 				return;
 			} else {
